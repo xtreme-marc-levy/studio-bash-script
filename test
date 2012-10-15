@@ -1,0 +1,47 @@
+#!/bin/bash
+
+function useage {
+   echo "Please input projectName"
+}
+
+if [ $# -ne 1 ]; then
+     useage
+     exit 1
+fi
+
+
+projectName=$1
+localFolder="/Users/dx062/Documents/"
+newFolder=${localFolder}${projectName}
+
+if [ -d "$newFolder" ]; then
+  echo "project Already Exists"
+  ##exit 1
+fi
+
+repository="git@github.com:xtreme-marc-levy/iOSDefault.git"
+
+git clone "$repository" "$newFolder"
+
+libraryFolder=${newFolder}/iOSDefault
+
+lines=($(cat test-data))
+
+libName=${lines[0]}
+libCommit=${lines[1]}
+libUrl=git@github.com:xtremelabs/${libName}.git
+
+git clone $libUrl $libraryFolder/$libName
+
+curl -u 'xtreme-marc-levy:xtremelabs1' https://api.github.com/user/repos -d '{"name":'$projectName'}'
+tmp=git@github.com:xtreme-marc-levy/$projectName.git
+cd $newFolder
+
+git init
+git add .
+git commit -m "Init"
+git remote rm origin
+git remote add origin $tmp
+git push -u origin master
+
+exit 0
